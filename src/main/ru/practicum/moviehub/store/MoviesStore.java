@@ -7,17 +7,17 @@ import java.util.Map;
 
 public class MoviesStore {
     private final Map<Integer, Movie> movies;
-    private int ID;
+    private int iD;
 
     public MoviesStore() {
         this.movies = new HashMap<>();
-        this.ID = 0;
+        this.iD = 0;
     }
 
     public int addMovie(String title, int year) {
-        movies.put(ID, new Movie(ID, title, year));
-        ID++;
-        return ID - 1;
+        movies.put(iD, new Movie(iD, title, year));
+        iD++;
+        return iD - 1;
     }
 
     public boolean isEmpty() {

@@ -115,7 +115,7 @@ public class MoviesApiTest {
 
         // проверка, что был возвращён массив
         String body = resp.body().trim();
-        assertEquals("[{\"ID\":0,\"title\":\"Фильм1\",\"year\":1988}]", body,
+        assertEquals("[{\"iD\":0,\"title\":\"Фильм1\",\"year\":1988}]", body,
                 "Ожидается JSON-массив с фильмом");
 
     }
@@ -151,7 +151,7 @@ public class MoviesApiTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         String body = resp.body();
-        assertEquals("{\"ID\":2,\"title\":\"Фильм1\",\"year\":1988}", body,
+        assertEquals("{\"iD\":2,\"title\":\"Фильм1\",\"year\":1988}", body,
                 "Ожидается JSON-объект с фильмом");
     }
 
@@ -307,7 +307,7 @@ public class MoviesApiTest {
     }
 
     @Test
-    void getMovieByiD_returnsMovie() throws Exception {
+    void getMovieByID_returnsMovie() throws Exception {
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
@@ -331,13 +331,13 @@ public class MoviesApiTest {
         assertEquals(200, resp.statusCode(), "GET /movies должен вернуть 200");
 
         String body = resp.body().trim();
-        assertEquals("{\"ID\":0,\"title\":\"Фильм1\",\"year\":1988}", body,
+        assertEquals("{\"iD\":0,\"title\":\"Фильм1\",\"year\":1988}", body,
                 "Ожидается JSON-объект с фильмом");
 
     }
 
     @Test
-    void getMovieByiD_noMovieByiD5_returnsError() throws Exception {
+    void getMovieByID_noMovieByID5_returnsError() throws Exception {
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
@@ -362,7 +362,7 @@ public class MoviesApiTest {
     }
 
     @Test
-    void getMovieByiD_iDNotNumber_returnsError() throws Exception {
+    void getMovieByID_iDNotNumber_returnsError() throws Exception {
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
@@ -387,7 +387,7 @@ public class MoviesApiTest {
     }
 
     @Test
-    void deleteMovieByiD_correctQuery_returns204() throws Exception {
+    void deleteMovieByID_correctQuery_returns204() throws Exception {
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
@@ -429,7 +429,7 @@ public class MoviesApiTest {
     }
 
     @Test
-    void deleteMovieByiD_noMovieByiD5_returnsError() throws Exception {
+    void deleteMovieByID_noMovieByiD5_returnsError() throws Exception {
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
@@ -454,7 +454,7 @@ public class MoviesApiTest {
     }
 
     @Test
-    void deleteMovieByiD_iDNotNumber_returnsError() throws Exception {
+    void deleteMovieByID_iDNotNumber_returnsError() throws Exception {
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
@@ -503,7 +503,7 @@ public class MoviesApiTest {
         assertEquals(200, resp.statusCode(), "GET /movies?year=1988 должен вернуть 200");
 
         String body = resp.body().trim();
-        assertEquals("[{\"ID\":0,\"title\":\"Фильм1\",\"year\":1988}]", body,
+        assertEquals("[{\"iD\":0,\"title\":\"Фильм1\",\"year\":1988}]", body,
                 "Ожидается JSON-массив с фильмами");
 
     }
