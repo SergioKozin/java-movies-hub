@@ -141,8 +141,8 @@ public class MoviesServer {
                                                         && !title.isEmpty()
                                                         && year >= 1888
                                                         && year <= 2027) {
-                                                    int ID = moviesStore.addMovie(title, year);
-                                                    jsonString = gson.toJson(moviesStore.getMovies().get(ID));
+                                                    int iD = moviesStore.addMovie(title, year);
+                                                    jsonString = gson.toJson(moviesStore.getMovies().get(iD));
                                                     responseCode = 201;
                                                 } else {
                                                     jsonString = gson.toJson(
