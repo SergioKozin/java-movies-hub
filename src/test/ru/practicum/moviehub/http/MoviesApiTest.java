@@ -1,8 +1,6 @@
 package ru.practicum.moviehub.http;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -35,16 +33,6 @@ public class MoviesApiTest {
 
             client.send(req, responseBodyHandler);
         }
-    }
-
-    @BeforeEach
-    void beforeEach() {
-
-    }
-
-    @AfterAll
-    static void afterAll() {
-
     }
 
     @Test
