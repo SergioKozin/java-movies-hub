@@ -13,12 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoviesApiTest {
-    private final int HTTP_CODE_OK = 200;
-    private final int HTTP_CODE_BAD_REQUEST = 400;
-    private final int HTTP_CODE_NOT_FOUND = 404;
-    private final int HTTP_CODE_UNPROCESSABLE_ENTITY = 422;
-    private final String HEADER_CONTENT_TYPE = "Content-type";
-    private final String MEDIA_TYPE = "application/json; charset=utf-8";
+    private static final int HTTP_CODE_OK = 200;
+    private static final int HTTP_CODE_CREATED = 201;
+    private static final int HTTP_CODE_BAD_REQUEST = 400;
+    private static final int HTTP_CODE_NOT_FOUND = 404;
+    private static final int HTTP_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
+    private static final int HTTP_CODE_UNPROCESSABLE_ENTITY = 422;
+    private static final String HEADER_CONTENT_TYPE = "Content-type";
+    private static final String MEDIA_TYPE = "application/json; charset=utf-8";
 
     @Test
     void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
@@ -133,7 +135,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        final int HTTP_CODE_CREATED = 201;
+
         assertEquals(HTTP_CODE_CREATED, resp.statusCode(), "POST /movies должен вернуть 201");
 
 
@@ -271,7 +273,6 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        final int HTTP_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
         assertEquals(HTTP_CODE_UNSUPPORTED_MEDIA_TYPE, resp.statusCode(), "POST /movies должен вернуть 415");
 
     }
