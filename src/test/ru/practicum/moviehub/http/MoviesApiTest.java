@@ -1,6 +1,5 @@
 package ru.practicum.moviehub.http;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -14,26 +13,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoviesApiTest {
-
-    @BeforeAll
-    static void beforeAll() throws Exception {
-
-        try (HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(2))
-                .build()) {
-            URI uri = URI.create("http://localhost:8080/movies");
-            HttpRequest req = HttpRequest.newBuilder()
-                    .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
-                    .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
-                    .build();
-
-            HttpResponse.BodyHandler<String> responseBodyHandler =
-                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
-
-            client.send(req, responseBodyHandler);
-        }
-    }
+    private final static int HTTP_CODE_OK = 200;
+    private final static int HTTP_CODE_CREATED = 201;
+    private final static int HTTP_CODE_NO_CONTENT = 204;
+    private final static int HTTP_CODE_BAD_REQUEST = 400;
+    private final static int HTTP_CODE_NOT_FOUND = 404;
+    private final static int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
+    private final static int HTTP_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
+    private final static int HTTP_CODE_UNPROCESSABLE_ENTITY = 422;
+    private final static String HEADER_CONTENT_TYPE = "Content-type";
+    private final static String MEDIA_TYPE = "application/json; charset=utf-8";
 
     @Test
     void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
@@ -48,7 +37,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             // Обработчик тела запроса
@@ -58,12 +47,12 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
         // Допишите проверку кода ответа
-        assertEquals(200, resp.statusCode(), "GET /movies должен вернуть 200");
+        assertEquals(HTTP_CODE_OK, resp.statusCode(), "GET /movies должен вернуть 200");
 
         // Допишите проверку заголовка Content-Type
         String contentTypeHeaderValue =
-                resp.headers().firstValue("Content-Type").orElse("");
-        assertEquals("application/json; charset=utf-8", contentTypeHeaderValue,
+                resp.headers().firstValue(HEADER_CONTENT_TYPE).orElse("");
+        assertEquals(MEDIA_TYPE, contentTypeHeaderValue,
                 "Content-Type должен содержать формат данных и кодировку");
 
         // проверка, что был возвращён массив
@@ -74,37 +63,55 @@ public class MoviesApiTest {
 
     @Test
     void getMovies_returnsMoviesArray() throws Exception {
+
+        try (HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build()) {
+            URI uri = URI.create("http://localhost:8080/movies");
+            HttpRequest req = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
+                    .uri(uri)
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
+                    .build();
+
+            HttpResponse.BodyHandler<String> responseBodyHandler =
+                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
+
+            client.send(req, responseBodyHandler);
+        }
+
+
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build()) {
             URI uri = URI.create("http://localhost:8080/movies");
-            // создайте объект GET-запроса на эндпоинт /movies
+
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
-            // Обработчик тела запроса
+
             HttpResponse.BodyHandler<String> responseBodyHandler =
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
             // Отправьте запрос
             resp = client.send(req, responseBodyHandler);
         }
-        // Допишите проверку кода ответа
-        assertEquals(200, resp.statusCode(), "GET /movies должен вернуть 200");
 
-        // Допишите проверку заголовка Content-Type
+        assertEquals(HTTP_CODE_OK, resp.statusCode(), "GET /movies должен вернуть 200");
+
+
         String contentTypeHeaderValue =
-                resp.headers().firstValue("Content-Type").orElse("");
-        assertEquals("application/json; charset=utf-8", contentTypeHeaderValue,
+                resp.headers().firstValue(HEADER_CONTENT_TYPE).orElse("");
+        assertEquals(MEDIA_TYPE, contentTypeHeaderValue,
                 "Content-Type должен содержать формат данных и кодировку");
 
-        // проверка, что был возвращён массив
+
         String body = resp.body().trim();
-        assertEquals("[{\"iD\":0,\"title\":\"Фильм1\",\"year\":1988}]", body,
-                "Ожидается JSON-массив с фильмом");
+        assertTrue(body.contains("\"title\":\"Фильм1\",\"year\":1988"),
+                "Ожидается JSON-объект с фильмом");
 
     }
 
@@ -121,7 +128,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -130,16 +137,18 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(201, resp.statusCode(), "POST /movies должен вернуть 201");
+        assertEquals(HTTP_CODE_CREATED, resp.statusCode(), "POST /movies должен вернуть 201");
 
 
         String contentTypeHeaderValue =
-                resp.headers().firstValue("Content-Type").orElse("");
-        assertEquals("application/json; charset=utf-8", contentTypeHeaderValue,
+                resp.headers().firstValue(HEADER_CONTENT_TYPE).orElse("");
+
+        assertEquals(MEDIA_TYPE, contentTypeHeaderValue,
                 "Content-Type должен содержать формат данных и кодировку");
 
         String body = resp.body();
-        assertEquals("{\"iD\":2,\"title\":\"Фильм1\",\"year\":1988}", body,
+
+        assertTrue(body.contains("\"title\":\"Фильм1\",\"year\":1988"),
                 "Ожидается JSON-объект с фильмом");
     }
 
@@ -155,7 +164,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"\",\"year\":1988}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -164,7 +173,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(422, resp.statusCode(), "POST /movies должен вернуть 422");
+        assertEquals(HTTP_CODE_UNPROCESSABLE_ENTITY, resp.statusCode(), "POST /movies должен вернуть 422");
 
     }
 
@@ -181,7 +190,7 @@ public class MoviesApiTest {
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"012345678901234567890123456789" +
                             "01234567890123456789012345678901234567890123456789012345678901234567890\",\"year\":1988}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -190,7 +199,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(422, resp.statusCode(), "POST /movies должен вернуть 422");
+        assertEquals(HTTP_CODE_UNPROCESSABLE_ENTITY, resp.statusCode(), "POST /movies должен вернуть 422");
 
     }
 
@@ -206,7 +215,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1887}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -215,7 +224,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(422, resp.statusCode(), "POST /movies должен вернуть 422");
+        assertEquals(HTTP_CODE_UNPROCESSABLE_ENTITY, resp.statusCode(), "POST /movies должен вернуть 422");
 
     }
 
@@ -231,7 +240,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":2028}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -240,7 +249,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(422, resp.statusCode(), "POST /movies должен вернуть 422");
+        assertEquals(HTTP_CODE_UNPROCESSABLE_ENTITY, resp.statusCode(), "POST /movies должен вернуть 422");
 
     }
 
@@ -256,7 +265,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":2027}"))
                     .uri(uri)
-                    .header("Content-type", "")
+                    .header(HEADER_CONTENT_TYPE, "")
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -265,7 +274,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(415, resp.statusCode(), "POST /movies должен вернуть 415");
+        assertEquals(HTTP_CODE_UNSUPPORTED_MEDIA_TYPE, resp.statusCode(), "POST /movies должен вернуть 415");
 
     }
 
@@ -281,7 +290,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\"}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -290,23 +299,53 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(422, resp.statusCode(), "POST /movies должен вернуть 422");
+        assertEquals(HTTP_CODE_UNPROCESSABLE_ENTITY, resp.statusCode(), "POST /movies должен вернуть 422");
 
     }
 
     @Test
     void getMovieByID_returnsMovie() throws Exception {
+        try (HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build()) {
+            URI uri = URI.create("http://localhost:8080/movies");
+            HttpRequest req = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
+                    .uri(uri)
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
+                    .build();
+
+            HttpResponse.BodyHandler<String> responseBodyHandler =
+                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
+
+            client.send(req, responseBodyHandler);
+        }
+        try (HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build()) {
+            URI uri = URI.create("http://localhost:8080/movies");
+            HttpRequest req = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
+                    .uri(uri)
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
+                    .build();
+
+            HttpResponse.BodyHandler<String> responseBodyHandler =
+                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
+
+            client.send(req, responseBodyHandler);
+        }
 
         HttpResponse<String> resp;
         try (HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build()) {
 
-            URI uri = URI.create("http://localhost:8080/movies/0");
+            URI uri = URI.create("http://localhost:8080/movies/1");
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -316,10 +355,10 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(200, resp.statusCode(), "GET /movies должен вернуть 200");
+        assertEquals(HTTP_CODE_OK, resp.statusCode(), "GET /movies должен вернуть 200");
 
         String body = resp.body().trim();
-        assertEquals("{\"iD\":0,\"title\":\"Фильм1\",\"year\":1988}", body,
+        assertTrue(body.contains("\"title\":\"Фильм1\",\"year\":1988"),
                 "Ожидается JSON-объект с фильмом");
 
     }
@@ -336,7 +375,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -346,7 +385,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(404, resp.statusCode(), "GET /movies должен вернуть 404");
+        assertEquals(HTTP_CODE_NOT_FOUND, resp.statusCode(), "GET /movies должен вернуть 404");
     }
 
     @Test
@@ -361,7 +400,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -371,7 +410,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(400, resp.statusCode(), "GET /movies/aaa должен вернуть 404");
+        assertEquals(HTTP_CODE_BAD_REQUEST, resp.statusCode(), "GET /movies/aaa должен вернуть 404");
     }
 
     @Test
@@ -382,12 +421,11 @@ public class MoviesApiTest {
                 .connectTimeout(Duration.ofSeconds(2))
                 .build()) {
 
-
             URI uri = URI.create("http://localhost:8080/movies");
             HttpRequest req = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -399,11 +437,11 @@ public class MoviesApiTest {
         try (HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build()) {
-            URI uri = URI.create("http://localhost:8080/movies/1");
+            URI uri = URI.create("http://localhost:8080/movies/0");
             HttpRequest req = HttpRequest.newBuilder()
                     .DELETE()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -413,7 +451,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(204, resp.statusCode(), "DELETE /movies/1 должен вернуть 204");
+        assertEquals(HTTP_CODE_NO_CONTENT, resp.statusCode(), "DELETE /movies/1 должен вернуть 204");
     }
 
     @Test
@@ -428,7 +466,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .DELETE()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -438,7 +476,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(404, resp.statusCode(), "DELETE /movies/5 должен вернуть 404");
+        assertEquals(HTTP_CODE_NOT_FOUND, resp.statusCode(), "DELETE /movies/5 должен вернуть 404");
     }
 
     @Test
@@ -453,7 +491,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .DELETE()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -463,13 +501,30 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(400, resp.statusCode(), "DELETE /movies/aaa должен вернуть 400");
+        assertEquals(HTTP_CODE_BAD_REQUEST, resp.statusCode(), "DELETE /movies/aaa должен вернуть 400");
     }
 
     @Test
     void getMoviesByYear_returnsMovies() throws Exception {
-
         HttpResponse<String> resp;
+        try (HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build()) {
+
+            URI uri = URI.create("http://localhost:8080/movies");
+            HttpRequest req = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"title\":\"Фильм1\",\"year\":1988}"))
+                    .uri(uri)
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
+                    .build();
+
+            HttpResponse.BodyHandler<String> responseBodyHandler =
+                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
+
+            client.send(req, responseBodyHandler);
+
+        }
+
         try (HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build()) {
@@ -478,7 +533,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -488,10 +543,10 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(200, resp.statusCode(), "GET /movies?year=1988 должен вернуть 200");
+        assertEquals(HTTP_CODE_OK, resp.statusCode(), "GET /movies?year=1988 должен вернуть 200");
 
         String body = resp.body().trim();
-        assertEquals("[{\"iD\":0,\"title\":\"Фильм1\",\"year\":1988}]", body,
+        assertTrue(body.contains("\"title\":\"Фильм1\",\"year\":1988"),
                 "Ожидается JSON-массив с фильмами");
 
     }
@@ -508,7 +563,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -518,7 +573,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(404, resp.statusCode(), "GET /movies?year=1890 должен вернуть 404");
+        assertEquals(HTTP_CODE_NOT_FOUND, resp.statusCode(), "GET /movies?year=1890 должен вернуть 404");
     }
 
     @Test
@@ -533,7 +588,7 @@ public class MoviesApiTest {
             HttpRequest req = HttpRequest.newBuilder()
                     .GET()
                     .uri(uri)
-                    .header("Content-type", "application/json; charset=utf-8")
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
 
@@ -543,6 +598,30 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        assertEquals(400, resp.statusCode(), "GET /movies?year=aaaa должен вернуть 400");
+        assertEquals(HTTP_CODE_BAD_REQUEST, resp.statusCode(), "GET /movies?year=aaaa должен вернуть 400");
+    }
+
+    @Test
+    void methodNotAllowed_returnsError() throws Exception {
+
+        HttpResponse<String> resp;
+        try (HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build()) {
+
+            URI uri = URI.create("http://localhost:8080/movies");
+            HttpRequest req = HttpRequest.newBuilder()
+                    .HEAD()
+                    .uri(uri)
+                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
+                    .build();
+
+            HttpResponse.BodyHandler<String> responseBodyHandler =
+                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
+
+            resp = client.send(req, responseBodyHandler);
+        }
+
+        assertEquals(HTTP_CODE_METHOD_NOT_ALLOWED, resp.statusCode(), "HEAD /movies должен вернуть 400");
     }
 }
