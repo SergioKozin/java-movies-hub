@@ -13,16 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoviesApiTest {
-    private final static int HTTP_CODE_OK = 200;
-    private final static int HTTP_CODE_CREATED = 201;
-    private final static int HTTP_CODE_NO_CONTENT = 204;
-    private final static int HTTP_CODE_BAD_REQUEST = 400;
-    private final static int HTTP_CODE_NOT_FOUND = 404;
-    private final static int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
-    private final static int HTTP_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
-    private final static int HTTP_CODE_UNPROCESSABLE_ENTITY = 422;
-    private final static String HEADER_CONTENT_TYPE = "Content-type";
-    private final static String MEDIA_TYPE = "application/json; charset=utf-8";
+    private final int HTTP_CODE_OK = 200;
+    private final int HTTP_CODE_BAD_REQUEST = 400;
+    private final int HTTP_CODE_NOT_FOUND = 404;
+    private final int HTTP_CODE_UNPROCESSABLE_ENTITY = 422;
+    private final String HEADER_CONTENT_TYPE = "Content-type";
+    private final String MEDIA_TYPE = "application/json; charset=utf-8";
 
     @Test
     void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
@@ -137,6 +133,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
+        final int HTTP_CODE_CREATED = 201;
         assertEquals(HTTP_CODE_CREATED, resp.statusCode(), "POST /movies должен вернуть 201");
 
 
@@ -274,6 +271,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
+        final int HTTP_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
         assertEquals(HTTP_CODE_UNSUPPORTED_MEDIA_TYPE, resp.statusCode(), "POST /movies должен вернуть 415");
 
     }
@@ -451,6 +449,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
+        final int HTTP_CODE_NO_CONTENT = 204;
         assertEquals(HTTP_CODE_NO_CONTENT, resp.statusCode(), "DELETE /movies/1 должен вернуть 204");
     }
 
@@ -622,6 +621,7 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
+        final int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
         assertEquals(HTTP_CODE_METHOD_NOT_ALLOWED, resp.statusCode(), "HEAD /movies должен вернуть 400");
     }
 }
