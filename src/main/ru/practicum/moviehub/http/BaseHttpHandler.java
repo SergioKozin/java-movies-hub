@@ -60,9 +60,11 @@ public class BaseHttpHandler implements HttpHandler {
         }
         Headers headers = httpExchange.getResponseHeaders();
         headers.set(HEADER_CONTENT_TYPE, MEDIA_TYPE);
-        httpExchange.sendResponseHeaders(responseCode, 0);
-        try (OutputStream outputStream = httpExchange.getResponseBody()) {
-            outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
+        httpExchange.sendResponseHeaders(responseCode, (responseCode == HTTP_CODE_NO_CONTENT) ? -1 : 0);
+        if (responseCode != HTTP_CODE_NO_CONTENT) {
+            try (OutputStream outputStream = httpExchange.getResponseBody()) {
+                outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
+            }
         }
     }
 

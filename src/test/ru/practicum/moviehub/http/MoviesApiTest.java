@@ -1,6 +1,8 @@
 package ru.practicum.moviehub.http;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.practicum.moviehub.store.MoviesStore;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -15,12 +17,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MoviesApiTest {
     private static final int HTTP_CODE_OK = 200;
     private static final int HTTP_CODE_CREATED = 201;
+    private static final int HTTP_CODE_NO_CONTENT = 204;
     private static final int HTTP_CODE_BAD_REQUEST = 400;
     private static final int HTTP_CODE_NOT_FOUND = 404;
+    private static final int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
     private static final int HTTP_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
     private static final int HTTP_CODE_UNPROCESSABLE_ENTITY = 422;
     private static final String HEADER_CONTENT_TYPE = "Content-type";
     private static final String MEDIA_TYPE = "application/json; charset=utf-8";
+
+    @BeforeAll
+    static void beforeAll() {
+        final MoviesServer server = new MoviesServer(new MoviesStore(), 8080);
+        Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+        server.start();
+    }
 
     @Test
     void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
@@ -443,14 +454,12 @@ public class MoviesApiTest {
                     .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
-
             HttpResponse.BodyHandler<String> responseBodyHandler =
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
 
             resp = client.send(req, responseBodyHandler);
         }
 
-        final int HTTP_CODE_NO_CONTENT = 204;
         assertEquals(HTTP_CODE_NO_CONTENT, resp.statusCode(), "DELETE /movies/1 должен вернуть 204");
     }
 
@@ -611,9 +620,8 @@ public class MoviesApiTest {
 
             URI uri = URI.create("http://localhost:8080/movies");
             HttpRequest req = HttpRequest.newBuilder()
-                    .HEAD()
+                    .PUT(HttpRequest.BodyPublishers.noBody())
                     .uri(uri)
-                    .header(HEADER_CONTENT_TYPE, MEDIA_TYPE)
                     .build();
 
             HttpResponse.BodyHandler<String> responseBodyHandler =
@@ -622,7 +630,6 @@ public class MoviesApiTest {
             resp = client.send(req, responseBodyHandler);
         }
 
-        final int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
         assertEquals(HTTP_CODE_METHOD_NOT_ALLOWED, resp.statusCode(), "HEAD /movies должен вернуть 400");
     }
 }
